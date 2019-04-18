@@ -29,7 +29,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -50,18 +50,24 @@ import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
+import com.opencsv.CSVReader;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Scanner;
 
+import static org.apache.commons.lang3.StringUtils.split;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String CLOUD_VISION_API_KEY = "<insertKeyHere>";
+    private static final String CLOUD_VISION_API_KEY = "insertkeyhere";
     public static final String FILE_NAME = "temp.jpg";
     private static final String ANDROID_CERT_HEADER = "X-Android-Cert";
     private static final String ANDROID_PACKAGE_HEADER = "X-Android-Package";
@@ -76,14 +82,42 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView mImageDetails;
     private ImageView mMainImage;
+    InputStream inputStream;
 
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        inputStream = getResources().openRawResource(R.raw.mywaste);
         //Toolbar toolbar = findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
+
+
+        final CardView backto_main = findViewById(R.id.cardboardView);
+        backto_main.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                //add your code here..
+                Intent cardAct = new Intent(MainActivity.this, cardboard.class);
+                MainActivity.this.startActivity(cardAct);
+            }
+        });
+
+        final CardView toTins = findViewById(R.id.testView);
+        toTins.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                Intent cardAct = new Intent(MainActivity.this, TinsAndCans.class);
+                MainActivity.this.startActivity(cardAct);
+            }
+        });
+        final CardView toPlastic = findViewById(R.id.plasticView);
+        toPlastic.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                Intent cardAct = new Intent(MainActivity.this, plastics.class);
+                MainActivity.this.startActivity(cardAct);
+            }
+        });
+
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
@@ -315,19 +349,68 @@ public class MainActivity extends AppCompatActivity {
         return Bitmap.createScaledBitmap(bitmap, resizedWidth, resizedHeight, false);
     }
 
-    private static String convertResponseToString(BatchAnnotateImagesResponse response) {
-        StringBuilder message = new StringBuilder("I found these things:\n\n");
+    public static String convertResponseToString(BatchAnnotateImagesResponse response) {
+        StringBuilder message = new StringBuilder();
+        StringBuilder checker = new StringBuilder(message.toString());
+        String filepath = "mywaste.csv";
+
+        //String[] objName = message.toString().split(",");
 
         List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
         if (labels != null) {
             for (EntityAnnotation label : labels) {
-                message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
-                message.append("\n");
+                //String dathing = new String;
+
+
+                message.append(String.format(Locale.US, "%s,", label.getDescription()));
+                //return message.toString();
+
             }
         } else {
             message.append("nothing");
         }
+            //String haa = message.toString();
+            //String yaboi[] = haa.split(" ");
 
-        return message.toString();
+            //return message.toString();
+            // Print the message ^
+            //String[] objName = message.toString().split(",");
+            //return (objName[i]);
+            //return objName[2];
+
+        int i = 0;
+        String[] objName = message.toString().split(",");
+        String searchTerm = "Furniture";
+        //String searchTerm = objName[i];
+        boolean found = false;
+        String ID = ""; String name1 = "";
+        String[] yurt = new String[0];
+
+        try {
+            Scanner x = new Scanner(new File("C:\\Users\\Racing5372\\Documents\\cloud-vision-master-works test\\android\\CloudVision\\app\\src\\main\\res\\raw\\mywaste.csv"));
+            x.useDelimiter("[,]");
+
+            while(x.hasNext() && !found) {
+                i += 1;
+                ID = x.next();
+                name1 = x.next();
+                if(ID.equals(searchTerm)) {
+                    found = true;
+                }
+            }
+
+            if(found) {
+                yurt[0] = x.next().toString();
+                return x.next();// return (name.desc)
+            }
+            else {
+                return ("Not found");
+            }
+        }
+        catch (FileNotFoundException e){
+            System.out.println("OOF");
+
+        }
+        return yurt[0];
     }
 }
